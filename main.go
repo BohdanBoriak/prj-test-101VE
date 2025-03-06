@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"time"
 )
 
 const (
@@ -15,11 +14,31 @@ const (
 func main() {
 	fmt.Println("Вітаємо у грі Math-Monster!")
 
-	for i := 5; i > 0; i-- {
-		fmt.Println(i)
-		time.Sleep(1 * time.Second)
-	}
+	for {
+		menu()
 
+		choice := ""
+		fmt.Scan(&choice)
+
+		switch choice {
+		case "1":
+			play()
+		case "2":
+			fmt.Println("Рейтинг в розробці -_-")
+		case "3":
+			return
+		default:
+		}
+	}
+}
+
+func menu() {
+	fmt.Println("1. Грати!")
+	fmt.Println("2. Рейтинг -_-")
+	fmt.Println("3. Вийти :(")
+}
+
+func play() {
 	myPoints := 0
 	for myPoints < totalPoints {
 		x, y := rand.Intn(100), rand.Intn(100)
