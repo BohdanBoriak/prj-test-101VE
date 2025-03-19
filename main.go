@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"prj-test/domain"
 	"strconv"
+	"time"
 )
 
 const (
@@ -11,8 +13,12 @@ const (
 	pointsForRightAns = 10
 )
 
+var id uint64 = 1
+
 func main() {
 	fmt.Println("Вітаємо у грі Math-Monster!")
+
+	var users []domain.User
 
 	for {
 		menu()
@@ -22,7 +28,8 @@ func main() {
 
 		switch choice {
 		case "1":
-			play()
+			user := play()
+			users = append(users, user)
 		case "2":
 			fmt.Println("Рейтинг в розробці -_-")
 		case "3":
@@ -38,12 +45,13 @@ func menu() {
 	fmt.Println("3. Вийти :(")
 }
 
-func play() {
+func play() domain.User {
+	startTime := time.Now()
+
 	myPoints := 0
 	for myPoints < totalPoints {
 		x, y := rand.Intn(100), rand.Intn(100)
 
-		// fmt.Println(x, " + ", y, " = ")
 		fmt.Printf("%v + %v = ", x, y)
 
 		var ans string
@@ -63,4 +71,19 @@ func play() {
 			}
 		}
 	}
+	endTime := time.Now()
+	duration := endTime.Sub(startTime)
+
+	fmt.Println("Введіть ім'я:")
+
+	name := ""
+	fmt.Scan(&name)
+
+	var u domain.User
+	u.Id = id
+	id++
+	u.Name = name
+	u.Time = duration
+
+	return u
 }
