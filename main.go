@@ -1,16 +1,20 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
+	"os"
 	"prj-test/domain"
+	"sort"
 	"strconv"
 	"time"
 )
 
 const (
 	totalPoints       = 50
-	pointsForRightAns = 10
+	pointsForRightAns = 50
 )
 
 var id uint64 = 1
@@ -19,24 +23,32 @@ func main() {
 	fmt.Println("Вітаємо у грі Math-Monster!")
 
 	var users []domain.User
+	users = append(users, domain.User{Id: 1, Name: "Vasyl", Time: 5 * time.Second})
+	users = append(users, domain.User{Id: 2, Name: "Mykola", Time: 3 * time.Second})
+	users = append(users, domain.User{Id: 3, Name: "MAX", Time: 8 * time.Second})
+	sortAndSave(users)
+	// for {
+	// 	menu()
 
-	for {
-		menu()
+	// 	choice := ""
+	// 	fmt.Scan(&choice)
 
-		choice := ""
-		fmt.Scan(&choice)
-
-		switch choice {
-		case "1":
-			user := play()
-			users = append(users, user)
-		case "2":
-			fmt.Println("Рейтинг в розробці -_-")
-		case "3":
-			return
-		default:
-		}
-	}
+	// 	switch choice {
+	// 	case "1":
+	// 		user := play()
+	// 		users = append(users, user)
+	// 	case "2":
+	// 		for _, u := range users {
+	// 			fmt.Printf(
+	// 				"id: %v, name: %s, time: %v\n",
+	// 				u.Id, u.Name, u.Time,
+	// 			)
+	// 		}
+	// 	case "3":
+	// 		return
+	// 	default:
+	// 	}
+	// }
 }
 
 func menu() {
@@ -86,4 +98,32 @@ func play() domain.User {
 	u.Time = duration
 
 	return u
+}
+
+func sortAndSave(users []domain.User) {
+	sort.SliceStable(users, func(i, j int) bool {
+		return users[i].Time < users[j].Time
+	})
+
+	file, err := os.OpenFile(
+		"users.json",
+		os.O_RDWR|os.O_CREATE|os.O_TRUNC,
+		0775)
+	if err != nil {
+		log.Printf("os.OpenFile: %s", err)
+		return
+	}
+
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Printf("file.Close(): %s", err)
+		}
+	}()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(users)
+	if err != nil {
+		log.Printf("encoder.Encode(): %s", err)
+	}
 }
