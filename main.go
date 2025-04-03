@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -23,32 +24,32 @@ func main() {
 	fmt.Println("Вітаємо у грі Math-Monster!")
 
 	var users []domain.User
-	users = append(users, domain.User{Id: 1, Name: "Vasyl", Time: 5 * time.Second})
-	users = append(users, domain.User{Id: 2, Name: "Mykola", Time: 3 * time.Second})
-	users = append(users, domain.User{Id: 3, Name: "MAX", Time: 8 * time.Second})
-	sortAndSave(users)
-	// for {
-	// 	menu()
 
-	// 	choice := ""
-	// 	fmt.Scan(&choice)
+	for {
+		menu()
 
-	// 	switch choice {
-	// 	case "1":
-	// 		user := play()
-	// 		users = append(users, user)
-	// 	case "2":
-	// 		for _, u := range users {
-	// 			fmt.Printf(
-	// 				"id: %v, name: %s, time: %v\n",
-	// 				u.Id, u.Name, u.Time,
-	// 			)
-	// 		}
-	// 	case "3":
-	// 		return
-	// 	default:
-	// 	}
-	// }
+		choice := ""
+		fmt.Scan(&choice)
+
+		switch choice {
+		case "1":
+			user := play()
+			users = getUsers()
+			users = append(users, user)
+			sortAndSave(users)
+		case "2":
+			users = getUsers()
+			for _, u := range users {
+				fmt.Printf(
+					"id: %v, name: %s, time: %v\n",
+					u.Id, u.Name, u.Time,
+				)
+			}
+		case "3":
+			return
+		default:
+		}
+	}
 }
 
 func menu() {
@@ -126,4 +127,47 @@ func sortAndSave(users []domain.User) {
 	if err != nil {
 		log.Printf("encoder.Encode(): %s", err)
 	}
+}
+
+func getUsers() []domain.User {
+	var users []domain.User
+
+	fileInfo, err := os.Stat("users.json")
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			_, err = os.Create("users.json")
+			if err != nil {
+				log.Printf("getUsers(os.Create): %s", err)
+			}
+			return nil
+		}
+		log.Printf("getUsers(os.Stat): %s", err)
+		return nil
+	}
+
+	if fileInfo.Size() == 0 {
+		return nil
+	}
+
+	file, err := os.Open("users.json")
+	if err != nil {
+		log.Printf("getUsers(os.Open): %s", err)
+		return nil
+	}
+
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Printf("file.Close(): %s", err)
+		}
+	}()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&users)
+	if err != nil {
+		log.Printf("getUsers(decoder.Decode): %s", err)
+		return nil
+	}
+
+	return users
 }
